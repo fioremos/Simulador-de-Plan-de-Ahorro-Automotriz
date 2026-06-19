@@ -1,1 +1,7 @@
-# -Simulador-de-Plan-de-Ahorro-Automotriz
+# Mi Sitio
+
+## Claves para usuario
+
+**Superuser**
+User: admin
+Password: admin

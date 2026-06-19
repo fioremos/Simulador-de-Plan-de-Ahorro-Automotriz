@@ -1,0 +1,23 @@
+{% load static %}
+<header class="main-header">
+    <nav class="nav-container">
+        <div class="logo">
+            <img src="{% static 'imagenes/logo.png' %}" alt="Taro Logo">
+        </div>
+
+        <button class="menu-toggle" aria-label="Abrir menú">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </nav>
+    <section class="hero">
+        <div class="hero-auto">
+            <img src="{% static 'imagenes/auto.png' %}">
+        </div>
+        <div class="hero-content">
+            <h1>Tu camino empieza</h1>
+            <h1>AHORA</h1>
+        </div>
+    </section>
+</header>

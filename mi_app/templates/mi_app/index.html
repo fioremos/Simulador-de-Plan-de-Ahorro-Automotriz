@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load humanize %}
+
+{% block extra_css %}
+<link href="{% static 'mi_app/styles.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mi_app/script.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="contenedor">
+    <h2 class="titulo-principal">1. Selecciona tu vehículo</h2>
+
+    <div class="contenedor-grid">
+    {% for auto in vehiculos %}
+        <div class="tarjeta">
+            <div class="imagen-check">
+                <div class="check">✓</div>
+                <div class="img-wrapper">
+                    <img alt="{{ auto.nombre }}" src="{% static auto.img %}">
+                </div>
+            </div>
+            <h3 class="car-names">{{ auto.nombre }}</h3>
+            <p>Desde  <strong>{{ auto.precio|floatformat:"0"|intcomma }}</strong></p>
+            <button class="btn">Seleccionar</button>
+        </div>
+        {% empty %}
+            <p style="grid-column: 1/-1; text-align: center; color: #721c24; background-color: #f8d7da; padding: 15px; border-radius: 8px;">
+                No se encontraron vehículos en la base de datos. Por favor, cárguelos desde el panel de administración.
+            </p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="contenedor">
+    <h2 class="titulo-principal">3. Define tu financiamiento</h2>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" data-tab="personales" type="button">Datos personales</button>
+        <button class="tab-btn" data-tab="garante" type="button">Datos del garante</button>
+        <button class="tab-btn" data-tab="plan" type="button">Datos del plan</button>
+    </div>
+
+    <div class="contenedor-datos">
+        <form action="{% url 'procesar_simulacion' %}" class="formulario-col" id="form-simulador" method="POST">
+            {% csrf_token %}
+
+            <input id="input-vehiculo" name="vehiculo" type="hidden" value="Velkar Nova">
+
+            <div class="tab-content active" id="personales">
+                <h3>Datos del Titular</h3>
+                <div class="grid-inputs">
+                    <div class="input-group">
+                        <label>Nombre y Apellido</label>
+                        <input name="nombre_t" id="nombre_t" required type="text">
+                    </div>
+                    <div class="input-group">
+                        <label>DNI</label>
+                        <input name="dni_t" id="dni_t" required type="text">
+                    </div>
+                    <div class="input-group">
+                        <label>Edad</label>
+                        <input name="edad_t" id="edad_t" required type="number">
+                    </div>
+                    <div class="input-group">
+                        <label>Ingreso Neto Mensual</label>
+                        <input name="ingreso_t" id="ingreso_t" required type="number">
+                        <small id="conversor-ingreso-t" class="cartel-dolar" style="display: none;"></small>
+                    </div>
+                    <div class="input-group full-width">
+                        <label>Email</label>
+                        <input name="email_t" id="email_t" required type="email">
+                    </div>
+                    <div class="input-group full-width">
+                        <label>Teléfono</label>
+                        <input name="telefono_t" id="telefono_t" required type="text">
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="garante">
+                <h3>Datos del Garante</h3>
+                <div class="grid-inputs">
+                    <div class="input-group">
+                        <label>Nombre y Apellido</label>
+                        <input name="nombre_g" id="nombre_g" required type="text">
+                    </div>
+                    <div class="input-group">
+                        <label>Edad</label>
+                        <input name="edad_g" id="edad_g" required type="number">
+                    </div>
+                    <div class="input-group">
+                        <label>Tipo de Trabajo</label>
+                        <select name="tipo_trabajo_g" id="tipo_trabajo_g">
+                            <option value="dependencia">Relación de Dependencia</option>
+                            <option value="independiente">Independiente</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Antigüedad Laboral (Años)</label>
+                        <input name="antiguedad_g" id="antiguedad_g" required type="number">
+                    </div>
+                    <div class="input-group">
+                        <label>Ingresos Mensuales</label>
+                        <input name="ingreso_g" id="ingreso_g" required type="number">
+                        <small id="conversor-ingreso-g" class="cartel-dolar" style="display: none;"></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="plan">
+                <h3>Datos del Plan</h3>
+                <div class="input-group">
+                    <label>Modelo</label>
+                    <select name="modelo" id="modelo">
+                        <option value="">Selecciona un vehículo arriba...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Plan</label>
+                    <select name="plan">
+                        <option value="70/30">Plan 70/30</option>
+                        <option value="80/20">Plan 80/20</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="alerta-error" id="contenedor-errores" style="display: none;">
+                <h4>No es posible avanzar con la financiación:</h4>
+                <ul id="lista-errores"></ul>
+            </div>
+
+            <button class="btn-simular" type="submit" disabled>Simular plan</button>
+        </form>
+
+        <aside class="informe-col" id="informe-resultado">
+            <h2>Informe de financiamiento</h2>
+
+            <div class="car-summary">
+                <div>
+                    <p class="label">Vehículo Escogido</p>
+                    <p class="car-name"></p>
+                    <p class="car-price"></p>
+                </div>
+                <img alt="Auto escogido" class="img-mini" src="{% static 'imagenes/negro.png' %}">
+            </div>
+
+            <div class="data-list">
+                <div class="row"><span>Financiamiento</span><span id="inf-tipo-plan"></span></div>
+                <div class="row"><span>Cantidad de Cuotas</span><span>84</span></div>
+                <div class="row"><span>Importe para Adjudicación</span><span id="inf-monto-adjudicar"></span></div>
+                <div class="row"><span>Importe para el Retiro</span><span id="inf-monto-retiro"></span></div>
+                <div class="row"><span>Tasa de Interés</span><span id="inf-tasa"></span></div>
+                <hr>
+                <div class="row total">
+                    <span>Valor Final de la Cuota Mensual</span>
+                    <span class="price-red" id="inf-cuota"></span>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}
