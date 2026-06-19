@@ -21,5 +21,4 @@ from . import create_superuser
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('mi_app.urls')),
-    path('', include('usuarios.urls')),
 ]
