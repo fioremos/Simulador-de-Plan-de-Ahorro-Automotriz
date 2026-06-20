@@ -128,16 +128,17 @@ def procesar_simulacion(request):
             f"Sistema de Gestión Web de Planes de Ahorro."
         )
 
-        try:
-            send_mail(
-                subject=asunto_mail,
-                message=cuerpo_mail,
-                from_email=None,
-                recipient_list=[datos['email_t']],
-                fail_silently=False,
-            )
-        except Exception as error_smtp:
-            print(f"Error al enviar el correo SMTP: {error_smtp}")
+# Send email is commented because is not working on Render
+#        try:
+#            send_mail(
+#                subject=asunto_mail,
+#               message=cuerpo_mail,
+#                from_email=None,
+#                recipient_list=[datos['email_t']],
+#                fail_silently=False,
+#            )
+#        except Exception as error_smtp:
+#            print(f"Error al enviar el correo SMTP: {error_smtp}")
 
         return JsonResponse({
             'success': True,
